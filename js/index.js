@@ -1,66 +1,90 @@
-//URLS
-let FEATURED_MOVIES=`http://localhost:3000/films`
-document.addEventListener(`DOMContentLoaded`, () => {
-
-     // create featured movies element
-     const createFeaturedMovies =(image, title, description)=>{
-        const mainDiv = document.createElement(`div`)
-        mainDiv.classList.add(`card`,`col-12`)
-
-        const rowDiv = document.createElement(`div`)
-        rowDiv.classList.add(`row`)
-
-        const imgDiv = document.createElement(`div`)
-        imgDiv.classList.add(`col-6`)
-
-        const cardBody = document.createElement(`div`)
-        cardBody.classList.add(`col-6`,`card-body`)
-
-        const moviePoster = document.createElement(`img`)
-        moviePoster.classList.add(`card-img`)
-        moviePoster.src=image
-
-        const movieTitle = document.createElement(`h5`)
-        movieTitle.classList.add(`card-title`)
-        movieTitle.innerText=title
-
-        const movieDescription = document.createElement(`p`)
-        movieDescription.classList.add(`card-text`)
-        movieDescription.innerText=description
-
-        //appending
-        cardBody.appendChild(movieTitle)
-        cardBody.appendChild(movieDescription)
-
-        imgDiv.appendChild(moviePoster)
-
-        rowDiv.appendChild(imgDiv)
-        rowDiv.appendChild(cardBody)
-
-        mainDiv.appendChild(rowDiv)
-
-        return mainDiv
-     }
-
-      //load featured movies
- const loadFeaturedMovies = () => {
-    fetch(FEATURED_MOVIES)
-    .then((response) => response.json)
-    .then((data) =>{
-        const filmsData = data.films[0]
-        const name = filmsData.title
-        const description = filmsData.description
-        const image = filmsData.poster
-        const featuredMovie =createFeaturedMovies(image, name, description)
-        document.getElementById(`featured movies`).appendChild(featuredMovie)
-    })
-
+const API = "http://localhost:3000/films/1";
+fetch(API)
+.then((res) => res.json())
+.then(renderFilm);
+function renderFilm(film) {
+    const filmMenuDiv = document.getElementById("film-menu");
+    const titleDiv = document.getElementById("film-details");
+    const runDiv = document.getElementById("runtime")
+    const showDiv = document.getElementById("showtime")
+    const availableDiv = document.getElementById("Available-tickets")
+    const filmPoster = document.createElement("img");
+    filmPoster.src = film.poster;
+    filmMenuDiv.append(filmPoster);
+    const filmTitle = document.createElement("p");
+    filmTitle.textContent = film.title;
+    titleDiv.append(filmTitle);
+    const filmRuntime = document.createElement("p");
+    filmRuntime.textContent = film.runtime;
+    runDiv.append(filmRuntime);
+    const filmShowtime = document.createElement("p");
+    filmShowtime.textContent = film.showtime;
+    showDiv.append(filmShowtime);
+    const filmAvailability = document.createElement("p");
+    filmAvailability.textContent = (film.capacity - film.tickets_sold);
+    availableDiv.append(filmAvailability);
 }
-loadFeaturedMovies()
+const baseUrl = "http://localhost:3000/films";
+function fetchMovies(){
+    fetch(baseUrl)
+        .then((response) => response.json())
+        .then((data) =>{
+            data.forEach((films) =>{
+                let li = document.createElement("li");
+                li.textContent = films.title;
+                li.addEventListener("click",
+                (e)=>{
+                  let buttonContent =
+                  document.querySelector("button#buy-ticket")
+                  buttonContent.textContent = "Buy Tickets"
+                    let title =
+                 document.getElementById("movie-title");
+                    title.textContent =
+                films.title;
+                let img =
+                document.getElementById("movie-poster");
+                   img.src =
+                films.poster;
+                   let showTime =
+                document.getElementById("showtime");
+                  showTime.textContent =
+                films.showtime;
+                let runTime =
+                document.getElementById("runtime");
+                  runTime.textContent =
+                `${films.runtime} Minutes`;
+                let tickets =
+              document.querySelector("div#ticket-counter");
+                    tickets.textContent = films["capacity"] - films["tickets_sold"]
+                })
+                document.querySelector("ul#films").appendChild(li)
+            })
+        })
+    }fetchMovies()
 
-
-// create all movies element
-
-
-
+function baseMovie(){ fetch(baseUrl)
+    .then(response => response.json())
+    .then(data => {
+    document.querySelector("h3#movie-title").textContent = data[0]["title"]
+    document.querySelector("img#movie-poster").setAttribute("src",`${data[0]["poster"]}`)
+    document.querySelector("div#showtime").textContent = data[0]["showtime"]
+    document.querySelector("div#runtime").textContent = `${data[0]["runtime"]} Minutes`
+    document.querySelector("ul#films").firstElementChild.remove()
+    document.querySelector("div#ticket-counter").textContent = data[0]["capacity"] - data[0]["tickets_sold"]
 })
+}
+baseMovie()
+
+function buyTicket(){
+    let button = document.querySelector("button#buy-ticket")
+    button.addEventListener("click",function(){
+    let currentLi = document.querySelector("div#ticket-counter")
+    let number = parseInt(currentLi.textContent)
+    if(number >=1){
+        currentLi.textContent = currentLi.textContent -1}
+        else {document.querySelector("button#buy-ticket").textContent = "Sold Out"
+          alert("Sorry, No more tickets available!!")}
+      }
+      )
+      }
+      buyTicket()
